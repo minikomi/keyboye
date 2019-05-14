@@ -5,40 +5,75 @@ import (
 	"github.com/gomidi/connect"
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midimessage/channel"
-	//	. "github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midiwriter"
+	"github.com/minikomi/keyboye/internal/note"
 	driver "github.com/minikomi/rtmididrv"
 	"github.com/veandco/go-sdl2/sdl"
 	"io"
 	"os"
 )
 
-var winTitle string = "Go-SDL2 Render"
+var winTitle string = "🎹"
 var winWidth, winHeight int32 = 800, 600
 
-type state struct {
+type KeyboyeState struct {
+	Octave      note.NoteModifier
+	ActiveNotes map[sdl.Keycode]note.AbsoluteNote
 }
 
-var keyMap = map[sdl.Keycode]uint8{
-	sdl.K_a: 63,
-	sdl.K_s: 64,
-	sdl.K_d: 65,
-	sdl.K_f: 66,
+var state = KeyboyeState{
+	5,
+	map[sdl.Keycode]note.AbsoluteNote{},
+}
+
+func getAbsoluteNote(noteModifier note.NoteModifier) note.AbsoluteNote {
+	return note.AbsoluteNote(noteModifier + state.Octave*12)
+}
+
+var keyToNoteMap = map[sdl.Keycode]note.NoteModifier{
+	sdl.K_a: note.C,
+	sdl.K_w: note.CSharp,
+	sdl.K_s: note.D,
+	sdl.K_e: note.DSharp,
+	sdl.K_d: note.E,
+	sdl.K_f: note.F,
+	sdl.K_t: note.G,
+	sdl.K_g: note.GSharp,
+	sdl.K_y: note.A,
+	sdl.K_h: note.ASharp,
+	sdl.K_u: note.B,
+	sdl.K_j: note.HC,
+	sdl.K_k: note.HCSharp,
+	sdl.K_o: note.HD,
+	sdl.K_l: note.HDSharp,
+}
+
+var keyToCommand = map[sdl.Keycode]string{}
+
+func logKeyEvent(ev *sdl.KeyboardEvent) {
+	fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
+		ev.Timestamp, ev.Type, ev.Keysym.Sym, ev.Keysym.Mod, ev.State, ev.Repeat)
 }
 
 func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
-	fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
-		ev.Timestamp, ev.Type, ev.Keysym.Sym, ev.Keysym.Mod, ev.State, ev.Repeat)
-	note, ok := keyMap[ev.Keysym.Sym]
+	kc := ev.Keysym.Sym
+	noteModifier, notePressed := keyToNoteMap[kc]
 
-	if ok {
-		fmt.Println(note)
-		if ev.State == 1 {
-			if ev.Repeat != 1 {
-				wr.NoteOn(note, 90)
+	absoluteNote := getAbsoluteNote(noteModifier)
+
+	if notePressed {
+		// first keydown = ev.State = 1, ev.Repeat = 0
+		switch {
+		case ev.State == 1 && ev.Repeat == 0:
+			fmt.Println("pressed", absoluteNote)
+			state.ActiveNotes[kc] = absoluteNote
+			wr.NoteOn(uint8(absoluteNote), 90)
+		case ev.State == 0:
+			absNote, ok := state.ActiveNotes[kc]
+			if ok {
+				fmt.Println("released", absoluteNote)
+				wr.NoteOff(uint8(absNote))
 			}
-		} else {
-			wr.NoteOff(note)
 		}
 	} else {
 		fmt.Printf("%d %d\n", sdl.GetScancodeFromKey(ev.Keysym.Sym), sdl.K_a)
