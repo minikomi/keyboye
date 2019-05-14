@@ -57,11 +57,12 @@ func logKeyEvent(ev *sdl.KeyboardEvent) {
 
 func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
 	kc := ev.Keysym.Sym
-	noteModifier, notePressed := keyToNoteMap[kc]
 
-	absoluteNote := getAbsoluteNote(noteModifier)
+	noteModifier, notePressed := keyToNoteMap[kc]
+	command, commandPressed := keyToCommand[kc]
 
 	if notePressed {
+		absoluteNote := getAbsoluteNote(noteModifier)
 		// first keydown = ev.State = 1, ev.Repeat = 0
 		switch {
 		case ev.State == 1 && ev.Repeat == 0:
@@ -69,12 +70,14 @@ func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
 			state.ActiveNotes[kc] = absoluteNote
 			wr.NoteOn(uint8(absoluteNote), 90)
 		case ev.State == 0:
-			absNote, ok := state.ActiveNotes[kc]
+			a, ok := state.ActiveNotes[kc]
 			if ok {
-				fmt.Println("released", absoluteNote)
-				wr.NoteOff(uint8(absNote))
+				fmt.Println("released", a)
+				wr.NoteOff(uint8(a))
 			}
 		}
+	} else if commandPressed {
+		fmt.Println(command)
 	} else {
 		fmt.Printf("%d %d\n", sdl.GetScancodeFromKey(ev.Keysym.Sym), sdl.K_a)
 	}
