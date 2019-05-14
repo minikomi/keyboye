@@ -50,8 +50,8 @@ var keyToNote = map[sdl.Keycode]note.NoteModifier{
 }
 
 var keyToCommand = map[sdl.Keycode]string{
-	sdl.K_LEFTBRACKET:  "octave down",
-	sdl.K_RIGHTBRACKET: "octave up",
+	sdl.K_COMMA:  "octave down",
+	sdl.K_PERIOD: "octave up",
 }
 
 func logKeyEvent(ev *sdl.KeyboardEvent) {
@@ -138,7 +138,6 @@ func draw(renderer *sdl.Renderer) {
 	renderer.Clear()
 
 	var i, j int32
-	var blackKeys []int32 = []int32{0, 1, 3, 4, 5}
 	var rect sdl.Rect
 
 	for i = 2; i < 10; i++ {
@@ -148,13 +147,13 @@ func draw(renderer *sdl.Renderer) {
 		rect = sdl.Rect{kbOffset, 10, 70, 40}
 
 		renderer.FillRect(&rect)
-		for j = 0; j < 8; j++ {
+		for j = 0; j < 7; j++ {
 			renderer.SetDrawColor(50, 50, 50, 255)
 			rect = sdl.Rect{kbOffset + j*10, 10, 10, 40}
 			renderer.DrawRect(&rect)
 		}
 		// black keys
-		for _, j := range blackKeys {
+		for _, j := range []int32{0, 1, 3, 4, 5} {
 			renderer.SetDrawColor(50, 50, 50, 255)
 			rect = sdl.Rect{kbOffset + 5 + j*10 + 2, 10, 6, 20}
 			renderer.FillRect(&rect)
