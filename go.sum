@@ -6,5 +6,7 @@ github.com/minikomi/rtmididrv v0.1.28 h1:VQtMjJY3UMjt1DKaiaaHlWsegmCJ0o44D9Um5Tr
 github.com/minikomi/rtmididrv v0.1.28/go.mod h1:NQRyhFpD89zXepkpNTFC/b08eK+Lpj2rUxdVT47Wdtc=
 github.com/minikomi/rtmididrv/imported/rtmidi v0.0.0-20190509060538-f5cd780ff5c1 h1:LB/J0PguO2qDvJgH3rIrBtXQBMCdECF2p748bYmmaVo=
 github.com/minikomi/rtmididrv/imported/rtmidi v0.0.0-20190509060538-f5cd780ff5c1/go.mod h1:KzSXJygoWvwi0at1ph/bxNNT/s75u6T0HHlU37c92nk=
+github.com/minikomi/rtmididrv/imported/rtmidi v0.0.0-20190509060558-ef9d99823589 h1:9atEpWV36nzAskTo4yxn220f9Y9G6KrPXfzbxRxvvPo=
+github.com/minikomi/rtmididrv/imported/rtmidi v0.0.0-20190509060558-ef9d99823589/go.mod h1:KzSXJygoWvwi0at1ph/bxNNT/s75u6T0HHlU37c92nk=
 github.com/veandco/go-sdl2 v0.3.0 h1:IWYkHMp8V3v37NsKjszln8FFnX2+ab0538J371t+rss=
 github.com/veandco/go-sdl2 v0.3.0/go.mod h1:FB+kTpX9YTE+urhYiClnRzpOXbiWgaU3+5F2AB78DPg=

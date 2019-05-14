@@ -9,6 +9,7 @@ const (
 	DSharp
 	E
 	F
+	FSharp
 	G
 	GSharp
 	A
@@ -18,6 +19,7 @@ const (
 	HCSharp
 	HD
 	HDSharp
+	HE
 )
 
 type AbsoluteNote uint8

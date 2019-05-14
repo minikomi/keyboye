@@ -30,25 +30,29 @@ func getAbsoluteNote(noteModifier note.NoteModifier) note.AbsoluteNote {
 	return note.AbsoluteNote(noteModifier + state.Octave*12)
 }
 
-var keyToNoteMap = map[sdl.Keycode]note.NoteModifier{
+var keyToNote = map[sdl.Keycode]note.NoteModifier{
 	sdl.K_a: note.C,
 	sdl.K_w: note.CSharp,
 	sdl.K_s: note.D,
 	sdl.K_e: note.DSharp,
 	sdl.K_d: note.E,
 	sdl.K_f: note.F,
+	sdl.K_r: note.FSharp,
 	sdl.K_t: note.G,
 	sdl.K_g: note.GSharp,
 	sdl.K_y: note.A,
 	sdl.K_h: note.ASharp,
-	sdl.K_u: note.B,
-	sdl.K_j: note.HC,
-	sdl.K_k: note.HCSharp,
-	sdl.K_o: note.HD,
-	sdl.K_l: note.HDSharp,
+	sdl.K_j: note.B,
+	// high octave
+	sdl.K_k: note.HC,
+	sdl.K_o: note.HCSharp,
+	sdl.K_l: note.HD,
 }
 
-var keyToCommand = map[sdl.Keycode]string{}
+var keyToCommand = map[sdl.Keycode]string{
+	sdl.K_LEFTBRACKET:  "octave down",
+	sdl.K_RIGHTBRACKET: "octave up",
+}
 
 func logKeyEvent(ev *sdl.KeyboardEvent) {
 	fmt.Printf("[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
@@ -58,7 +62,7 @@ func logKeyEvent(ev *sdl.KeyboardEvent) {
 func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
 	kc := ev.Keysym.Sym
 
-	noteModifier, notePressed := keyToNoteMap[kc]
+	noteModifier, notePressed := keyToNote[kc]
 	command, commandPressed := keyToCommand[kc]
 
 	if notePressed {
@@ -73,11 +77,24 @@ func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
 			a, ok := state.ActiveNotes[kc]
 			if ok {
 				fmt.Println("released", a)
+				delete(state.ActiveNotes, kc)
 				wr.NoteOff(uint8(a))
 			}
 		}
 	} else if commandPressed {
-		fmt.Println(command)
+		if ev.State == 1 && ev.Repeat == 0 {
+			switch command {
+			case "octave down":
+				if state.Octave > 2 {
+					state.Octave -= 1
+				}
+			case "octave up":
+				if state.Octave < 9 {
+					state.Octave += 1
+				}
+			}
+			fmt.Println(state)
+		}
 	} else {
 		fmt.Printf("%d %d\n", sdl.GetScancodeFromKey(ev.Keysym.Sym), sdl.K_a)
 	}
@@ -103,29 +120,67 @@ func draw(renderer *sdl.Renderer) {
 	renderer.Clear()
 
 	var i, j int32
+	var blackKeys []int32 = []int32{0, 1, 3, 4, 5}
+	var rect sdl.Rect
 
-	for i = 0; i < 9; i++ {
+	for i = 2; i < 10; i++ {
 		r, g, b := getKeyboardColor(i)
 		renderer.SetDrawColor(r, g, b, 255)
-		var rect = sdl.Rect{10 + 80*i, 10, 80, 40}
+		kbOffset := 10 + 70*(i-2)
+		rect = sdl.Rect{kbOffset, 10, 70, 40}
+
 		renderer.FillRect(&rect)
 		for j = 0; j < 8; j++ {
 			renderer.SetDrawColor(50, 50, 50, 255)
-			rect = sdl.Rect{10 + 80*i + j*10, 10, 10, 40}
+			rect = sdl.Rect{kbOffset + j*10, 10, 10, 40}
 			renderer.DrawRect(&rect)
 		}
 		// black keys
-		for _, j := range []int32{0, 1, 4, 5, 6} {
+		for _, j := range blackKeys {
 			renderer.SetDrawColor(50, 50, 50, 255)
-			rect = sdl.Rect{10 + 5 + 80*i + j*10 + 2, 10, 6, 20}
+			rect = sdl.Rect{kbOffset + 5 + j*10 + 2, 10, 6, 20}
 			renderer.FillRect(&rect)
 		}
 
 		if i == int32(state.Octave) {
 			renderer.SetDrawColor(255, 30, 30, 255)
-			rect = sdl.Rect{10 + 80*i, 50, 80, 2}
+			rect = sdl.Rect{kbOffset, 50, 90, 2}
 			renderer.FillRect(&rect)
 		}
+	}
+
+	var blackOffsets map[note.NoteModifier]int32 = map[note.NoteModifier]int32{
+		1: 8,
+		3: 18,
+	}
+
+	var whiteOffsets = map[note.NoteModifier]int32{
+		0:  2,
+		2:  12,
+		4:  22,
+		5:  32,
+		7:  42,
+		9:  52,
+		10: 62,
+	}
+
+	renderer.SetDrawColor(255, 30, 30, 255)
+	for _, abs := range state.ActiveNotes {
+		oct := int32((abs - 24) / 12)
+		var n note.NoteModifier = note.NoteModifier(abs % 12)
+		blackOffset, isBlack := blackOffsets[n]
+
+		fmt.Println(abs, oct, n)
+
+		kbOffset := (10 + oct*70)
+
+		if isBlack {
+			rect = sdl.Rect{kbOffset + blackOffset, 12, 4, 8}
+		} else {
+			rect = sdl.Rect{kbOffset + whiteOffsets[n], 40, 6, 8}
+		}
+		fmt.Println(rect)
+		renderer.FillRect(&rect)
 	}
 
 	renderer.Present()
@@ -258,6 +313,7 @@ func run() int {
 			switch ev := event.(type) {
 			case *sdl.KeyboardEvent:
 				handleKeyEvent(ev, wr)
+				draw(renderer)
 			case *sdl.QuitEvent:
 				println("Quit")
 				running = false
