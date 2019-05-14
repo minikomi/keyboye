@@ -37,11 +37,11 @@ var keyToNote = map[sdl.Keycode]note.NoteModifier{
 	sdl.K_e: note.DSharp,
 	sdl.K_d: note.E,
 	sdl.K_f: note.F,
-	sdl.K_r: note.FSharp,
-	sdl.K_t: note.G,
-	sdl.K_g: note.GSharp,
-	sdl.K_y: note.A,
-	sdl.K_h: note.ASharp,
+	sdl.K_t: note.FSharp,
+	sdl.K_g: note.G,
+	sdl.K_y: note.GSharp,
+	sdl.K_h: note.A,
+	sdl.K_u: note.ASharp,
 	sdl.K_j: note.B,
 	// high octave
 	sdl.K_k: note.HC,
@@ -114,6 +114,24 @@ func getKeyboardColor(i int32) (r, g, b uint8) {
 	return 0, 0, 0
 }
 
+var blackOffsets = map[note.NoteModifier]int32{
+	1:  8,
+	3:  18,
+	6:  38,
+	8:  48,
+	10: 58,
+}
+
+var whiteOffsets = map[note.NoteModifier]int32{
+	0:  2,
+	2:  12,
+	4:  22,
+	5:  32,
+	7:  42,
+	9:  52,
+	11: 62,
+}
+
 func draw(renderer *sdl.Renderer) {
 
 	renderer.SetDrawColor(225, 225, 225, 255)
@@ -149,37 +167,19 @@ func draw(renderer *sdl.Renderer) {
 		}
 	}
 
-	var blackOffsets map[note.NoteModifier]int32 = map[note.NoteModifier]int32{
-		1: 8,
-		3: 18,
-	}
-
-	var whiteOffsets = map[note.NoteModifier]int32{
-		0:  2,
-		2:  12,
-		4:  22,
-		5:  32,
-		7:  42,
-		9:  52,
-		10: 62,
-	}
-
 	renderer.SetDrawColor(255, 30, 30, 255)
 	for _, abs := range state.ActiveNotes {
 		oct := int32((abs - 24) / 12)
 		var n note.NoteModifier = note.NoteModifier(abs % 12)
-		blackOffset, isBlack := blackOffsets[n]
-
-		fmt.Println(abs, oct, n)
 
 		kbOffset := (10 + oct*70)
+		blackOffset, isBlack := blackOffsets[n]
 
 		if isBlack {
 			rect = sdl.Rect{kbOffset + blackOffset, 12, 4, 8}
 		} else {
 			rect = sdl.Rect{kbOffset + whiteOffsets[n], 40, 6, 8}
 		}
-		fmt.Println(rect)
 		renderer.FillRect(&rect)
 	}
 
