@@ -14,7 +14,7 @@ import (
 )
 
 var winTitle string = "🎹"
-var winWidth, winHeight int32 = 800, 600
+var winWidth, winHeight int32 = 800, 60
 
 type KeyboyeState struct {
 	Octave      note.NoteModifier
@@ -80,38 +80,50 @@ func handleKeyEvent(ev *sdl.KeyboardEvent, wr *Writer) {
 	}
 }
 
-func draw(renderer *sdl.Renderer) {
-	var points []sdl.Point
-	var rect sdl.Rect
-	var rects []sdl.Rect
+func getKeyboardColor(i int32) (r, g, b uint8) {
+	switch i % 4 {
+	case 0:
+		return 255, 255, 210
+	case 1:
+		return 210, 255, 255
+	case 2:
+		return 255, 210, 210
+	case 3:
+		return 210, 255, 222
+	}
+	return 0, 0, 0
+}
 
+func draw(renderer *sdl.Renderer) {
+
+	renderer.SetDrawColor(225, 225, 225, 255)
 	renderer.Clear()
 
-	renderer.SetDrawColor(255, 255, 255, 255)
-	renderer.DrawPoint(150, 300)
+	var i, j int32
 
-	renderer.SetDrawColor(0, 0, 255, 255)
-	renderer.DrawLine(0, 0, 200, 200)
+	for i = 0; i < 9; i++ {
+		r, g, b := getKeyboardColor(i)
+		renderer.SetDrawColor(r, g, b, 255)
+		var rect = sdl.Rect{10 + 80*i, 10, 80, 40}
+		renderer.FillRect(&rect)
+		for j = 0; j < 8; j++ {
+			renderer.SetDrawColor(50, 50, 50, 255)
+			rect = sdl.Rect{10 + 80*i + j*10, 10, 10, 40}
+			renderer.DrawRect(&rect)
+		}
+		// black keys
+		for _, j := range []int32{0, 1, 4, 5, 6} {
+			renderer.SetDrawColor(50, 50, 50, 255)
+			rect = sdl.Rect{10 + 5 + 80*i + j*10 + 2, 10, 6, 20}
+			renderer.FillRect(&rect)
+		}
 
-	points = []sdl.Point{{0, 0}, {100, 300}, {100, 300}, {200, 0}}
-	renderer.SetDrawColor(255, 255, 0, 255)
-	renderer.DrawLines(points)
-
-	rect = sdl.Rect{300, 0, 200, 200}
-	renderer.SetDrawColor(255, 0, 0, 255)
-	renderer.DrawRect(&rect)
-
-	rects = []sdl.Rect{{400, 400, 100, 100}, {550, 350, 200, 200}}
-	renderer.SetDrawColor(0, 255, 255, 255)
-	renderer.DrawRects(rects)
-
-	rect = sdl.Rect{250, 250, 200, 200}
-	renderer.SetDrawColor(0, 255, 0, 255)
-	renderer.FillRect(&rect)
-
-	rects = []sdl.Rect{{500, 300, 100, 100}, {200, 300, 200, 200}}
-	renderer.SetDrawColor(255, 0, 255, 255)
-	renderer.FillRects(rects)
+		if i == int32(state.Octave) {
+			renderer.SetDrawColor(255, 30, 30, 255)
+			rect = sdl.Rect{10 + 80*i, 50, 80, 2}
+			renderer.FillRect(&rect)
+		}
+	}
 
 	renderer.Present()
 
