@@ -9,7 +9,7 @@ import (
 )
 
 var winTitle string = "🎹"
-var winWidth, winHeight int32 = 620, 60
+var winWidth, winHeight int32 = 620, 58
 
 type KeyboyeState struct {
 	Octave      note.NoteModifier

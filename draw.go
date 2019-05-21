@@ -1,13 +1,14 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/minikomi/keyboye/internal/note"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
-	"strconv"
 )
 
-var rect sdl.Rect
+var srcRect, rect sdl.Rect
 var i, j int32
 var solid *sdl.Surface
 var texture *sdl.Texture
@@ -26,7 +27,6 @@ func Draw(renderer *sdl.Renderer, font *ttf.Font) {
 		kbOffsetLeft := 10 + 70*(i-2)
 
 		// text
-
 		if i == int32(state.Octave) {
 			solid, err = font.RenderUTF8Solid(strconv.Itoa(int(i)), red)
 		} else {
@@ -42,26 +42,26 @@ func Draw(renderer *sdl.Renderer, font *ttf.Font) {
 		}
 
 		srcRect := sdl.Rect{0, 0, 10, 12}
-		rect = sdl.Rect{kbOffsetLeft, -1, 10, 12}
+		rect = sdl.Rect{kbOffsetLeft, 0, 10, 12}
 		renderer.Copy(texture, &srcRect, &rect)
 
 		// bg
 		r, g, b := getKeyboardColor(i)
 		renderer.SetDrawColor(r, g, b, 255)
-		rect = sdl.Rect{kbOffsetLeft, 10, 70, 40}
+		rect = sdl.Rect{kbOffsetLeft, 12, 70, 40}
 		renderer.FillRect(&rect)
 
 		// keys
 		for j = 0; j < 7; j++ {
 			renderer.SetDrawColor(50, 50, 50, 255)
-			rect = sdl.Rect{kbOffsetLeft + j*10, 10, 10, 40}
+			rect = sdl.Rect{kbOffsetLeft + j*10, 12, 10, 40}
 			renderer.DrawRect(&rect)
 		}
 
 		// black keys
 		for _, j := range []int32{0, 1, 3, 4, 5} {
 			renderer.SetDrawColor(50, 50, 50, 255)
-			rect = sdl.Rect{kbOffsetLeft + 5 + j*10 + 2, 10, 6, 20}
+			rect = sdl.Rect{kbOffsetLeft + 5 + j*10 + 2, 12, 6, 20}
 			renderer.FillRect(&rect)
 		}
 
@@ -69,9 +69,9 @@ func Draw(renderer *sdl.Renderer, font *ttf.Font) {
 		if i == int32(state.Octave) {
 			renderer.SetDrawColor(255, 30, 30, 255)
 			if i == 9 {
-				rect = sdl.Rect{kbOffsetLeft, 50, 70, 2}
+				rect = sdl.Rect{kbOffsetLeft, 52, 70, 2}
 			} else {
-				rect = sdl.Rect{kbOffsetLeft, 50, 90, 2}
+				rect = sdl.Rect{kbOffsetLeft, 52, 90, 2}
 			}
 			renderer.FillRect(&rect)
 		}
